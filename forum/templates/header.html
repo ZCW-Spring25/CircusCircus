@@ -6,3 +6,9 @@
 	<a href="/loginform">Click here to login or register!</a>
 	{% endif %}
 </div>
+
+{% if current_user.is_authenticated %}
+    <div class="actualuser">
+        <a href="{{ url_for('routes.user', user_id=current_user.id) }}">Profile</a>
+    </div>
+{% endif %}

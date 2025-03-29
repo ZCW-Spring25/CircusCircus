@@ -117,6 +117,21 @@ def comment():
 	db.session.commit()
 	return redirect("/viewpost?post=" + str(post_id))
 
+# @login_required
+# @rt.route('/action_reply', methods=['POST', 'GET']) #attempt to mimic comment as a reply
+# def reply():
+# 	comment_id = int(request.args.get("Comment"))
+# 	comment = Post.query.filter(Comment.id == comment_id).first()
+# 	if not comment:
+# 		return error("That post does not exist!")
+# 	content = request.form['content']
+# 	postdate = datetime.datetime.now()
+# 	reply = Reply(content, postdate)
+# 	current_user.reply.append(reply)
+# 	post.reply.append(reply)
+# 	db.session.commit()
+# 	return redirect("/viewpost?post=" + str(post_id))
+
 @login_required
 @rt.route('/action_post', methods=['POST'])
 def action_post():
@@ -144,4 +159,19 @@ def action_post():
 	user.posts.append(post)
 	db.session.commit()
 	return redirect("/viewpost?post=" + str(post.id))
+
+@login_required
+@rt.route('/user')
+def user():
+	user_id = request.args.get('user_id')
+
+	if user_id:
+		user = User.query.get_or_404(user_id)
+		posts = Post.query.filter(Post.user_id == user.id).all()
+		return render_template('user.html', user=user, posts=posts)
+	elif current_user.is_authenticated:
+		return redirect(url_for('user', user_id=current_user.id))
+	else:
+		return redirect ('/loginform')
+
 

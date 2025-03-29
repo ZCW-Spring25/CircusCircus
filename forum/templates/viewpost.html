@@ -1,7 +1,7 @@
 {% extends 'layout.html' %}
 {% block body %}
 {{ path|safe}}
-
+<p>Test1</p>
 <div class="actualpost">
 	<div class="actualposttitle">
 		<a href="/viewpost?post={{ post.id }}">{{post.title}}</a>
@@ -38,10 +38,10 @@
 {%if comments%}
 <div class="comments">
 {% for comment in comments %}
-	
+
 	<div class="comment">
 		<div class="commentuser">
-			(<span  {% if comment.user.admin %} style="color: red;" {% endif %}>{{ comment.user.username }}</span>) - 
+			(<span  {% if comment.user.admin %} style="color: red;" {% endif %}>{{ comment.user.username }}</span>) -
 		</div>
 		<div class="commentcontent">
 			{{ comment.content }}
