@@ -2,9 +2,11 @@ from flask import render_template, request, redirect, url_for
 from flask_login import current_user, login_user, logout_user
 from flask_login.utils import login_required
 import datetime
+import markdown
 from flask import Blueprint, render_template, request, redirect, url_for
 from forum.models import User, Post, Comment, Subforum, valid_content, valid_title, db, generateLinkPath, error
 from forum.user import username_taken, email_taken, valid_username
+from markupsafe import Markup
 
 ##
 # This file needs to be broken up into several, to make the project easier to work on.
@@ -117,6 +119,7 @@ def comment():
 	db.session.commit()
 	return redirect("/viewpost?post=" + str(post_id))
 
+
 @login_required
 @rt.route('/action_post', methods=['POST'])
 def action_post():
@@ -128,18 +131,20 @@ def action_post():
 	user = current_user
 	title = request.form['title']
 	content = request.form['content']
+	content_html = markdown.markdown(content)
+	print(f"Generated HTML: {content_html}")
 	#check for valid posting
 	errors = []
 	retry = False
 	if not valid_title(title):
 		errors.append("Title must be between 4 and 140 characters long!")
 		retry = True
-	if not valid_content(content):
+	if not valid_content(content_html):
 		errors.append("Post must be between 10 and 5000 characters long!")
 		retry = True
 	if retry:
-		return render_template("createpost.html",subforum=subforum,  errors=errors)
-	post = Post(title, content, datetime.datetime.now())
+		return render_template("createpost.html", content_html=Markup(content_html), subforum=subforum,  errors=errors)
+	post = Post(title, content_html, datetime.datetime.now())
 	subforum.posts.append(post)
 	user.posts.append(post)
 	db.session.commit()
