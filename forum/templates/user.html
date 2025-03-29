@@ -17,6 +17,19 @@
         {% else %}
             <p>You have no posts at this time.</p>
         {% endif %}
+        <h4>These are your comments:</h4>
+        {% if comments %}
+            <ul>
+                {% for comment in comments %}
+                    <li>
+                        <a href="/viewpost?post={{ comment.post_id }}">{{comment.postdate}}</a>
+                        <p>{{ comment.content }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>You have no comments at this time.</p>
+        {% endif %}
 
     {% else %}
         <a href="/loginform">Click here to login or register!</a>

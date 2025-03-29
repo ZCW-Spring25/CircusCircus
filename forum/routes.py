@@ -168,10 +168,33 @@ def user():
 	if user_id:
 		user = User.query.get_or_404(user_id)
 		posts = Post.query.filter(Post.user_id == user.id).all()
-		return render_template('user.html', user=user, posts=posts)
+		comments = Comment.query.filter(Comment.user_id == user.id).all()
+		return render_template('user.html', user=user, posts=posts, comments= comments)
 	elif current_user.is_authenticated:
 		return redirect(url_for('user', user_id=current_user.id))
 	else:
 		return redirect ('/loginform')
 
+@login_required
+@rt.route('/change_password', methods=['POST', 'GET'])
+def change_password():
+	if request.method == 'POST':
+		old_password = request.form['old_password']
+		new_password = request.form['new_password']
+		confirm_password = request.form['confirm_password']
 
+		if not check_password_hash(current_user.password, old_password):
+			flash('Old password does not match records.')
+			return redirect(url_for('change_password'))
+
+		if new_password != confirm_password:
+			flash('New and confirm do not match.')
+			return redirect(url_for('change_password'))
+
+		current_user.password = generate_password_hash(new_password)
+		db.session.commit()
+
+		flash('Password has been updated')
+		return redirect(url_for('user'))
+
+	return render_template('change_password.html')
