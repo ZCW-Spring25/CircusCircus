@@ -3,7 +3,7 @@ from flask_login import current_user, login_user, logout_user
 from flask_login.utils import login_required
 import datetime
 from flask import Blueprint, render_template, request, redirect, url_for
-from forum.models import User, Post, Comment, Subforum, valid_content, valid_title, db, generateLinkPath, error
+from forum.models import User, Post, Comment, Subforum, valid_content, valid_title, db, generateLinkPath, error, Reply
 from forum.user import username_taken, email_taken, valid_username
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -118,20 +118,16 @@ def comment():
 	db.session.commit()
 	return redirect("/viewpost?post=" + str(post_id))
 
-# @login_required
-# @rt.route('/action_reply', methods=['POST', 'GET']) #attempt to mimic comment as a reply
-# def reply():
-# 	comment_id = int(request.args.get("Comment"))
-# 	comment = Post.query.filter(Comment.id == comment_id).first()
-# 	if not comment:
-# 		return error("That post does not exist!")
-# 	content = request.form['content']
-# 	postdate = datetime.datetime.now()
-# 	reply = Reply(content, postdate)
-# 	current_user.reply.append(reply)
-# 	post.reply.append(reply)
-# 	db.session.commit()
-# 	return redirect("/viewpost?post=" + str(post_id))
+@login_required
+@rt.route('/action_reply/comment/<int:comment_id>', methods=['POST']) #attempt to mimic comment as a reply
+def action_reply(comment_id):
+	comment = Comment.query.get_or_404(comment_id)
+	content = request.form['content']
+	postdate = datetime.datetime.now()
+	reply = Reply(content=content, postdate=postdate, user_id=current_user.id, comment_id=comment_id)
+	db.session.add(reply)
+	db.session.commit()
+	return redirect(url_for('routes.viewpost', post=comment.post_id))
 
 @login_required
 @rt.route('/action_post', methods=['POST'])
@@ -170,7 +166,8 @@ def user():
 		user = User.query.get_or_404(user_id)
 		posts = Post.query.filter(Post.user_id == user.id).all()
 		comments = Comment.query.filter(Comment.user_id == user.id).all()
-		return render_template('user.html', user=user, posts=posts, comments= comments)
+		replies = Reply.query.filter(Reply.user_id == user.id).all()
+		return render_template('user.html', user=user, posts=posts, comments= comments, replies= replies)
 	elif current_user.is_authenticated:
 		return redirect(url_for('routes.user', user_id=current_user.id))
 	else:

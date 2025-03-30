@@ -17,18 +17,32 @@
         {% else %}
             <p>You have no posts at this time.</p>
         {% endif %}
-        <h4>These are your comments:</h4>
+        <h3>These are your comments:</h3>
         {% if comments %}
             <ul>
                 {% for comment in comments %}
                     <li>
-                        <a href="/viewpost?post={{ comment.post_id }}">{{comment.postdate}}</a>
+                        <a href="/viewpost?post={{ comment.post_id }}">{{comment.post.title}}</a>
                         <p>{{ comment.content }}</p>
                     </li>
                 {% endfor %}
             </ul>
         {% else %}
             <p>You have no comments at this time.</p>
+        {% endif %}
+
+        <h3>These are your replies:</h3>
+        {% if replies %}
+            <ul>
+                {% for reply in replies %}
+                    <li>
+                        <a href="/viewpost?post={{ reply.comment.post_id }}">{{reply.comment.post.title}}</a>
+                        <p>{{ reply.content }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>You have no replies at this time.</p>
         {% endif %}
 
     {% else %}
