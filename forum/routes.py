@@ -1,10 +1,11 @@
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, redirect, url_for, flash
 from flask_login import current_user, login_user, logout_user
 from flask_login.utils import login_required
 import datetime
 from flask import Blueprint, render_template, request, redirect, url_for
 from forum.models import User, Post, Comment, Subforum, valid_content, valid_title, db, generateLinkPath, error
 from forum.user import username_taken, email_taken, valid_username
+from werkzeug.security import generate_password_hash, check_password_hash
 
 ##
 # This file needs to be broken up into several, to make the project easier to work on.
@@ -171,7 +172,7 @@ def user():
 		comments = Comment.query.filter(Comment.user_id == user.id).all()
 		return render_template('user.html', user=user, posts=posts, comments= comments)
 	elif current_user.is_authenticated:
-		return redirect(url_for('user', user_id=current_user.id))
+		return redirect(url_for('routes.user', user_id=current_user.id))
 	else:
 		return redirect ('/loginform')
 
@@ -183,18 +184,18 @@ def change_password():
 		new_password = request.form['new_password']
 		confirm_password = request.form['confirm_password']
 
-		if not check_password_hash(current_user.password, old_password):
-			flash('Old password does not match records.')
-			return redirect(url_for('change_password'))
+		if not check_password_hash(current_user.password_hash, old_password):
+			flash('Old password does not match records.', 'danger')
+			return redirect(url_for('routes.change_password'))
 
 		if new_password != confirm_password:
-			flash('New and confirm do not match.')
-			return redirect(url_for('change_password'))
+			flash('New and confirm do not match.', 'warning')
+			return redirect(url_for('routes.change_password'))
 
-		current_user.password = generate_password_hash(new_password)
+		current_user.password_hash = generate_password_hash(new_password)
 		db.session.commit()
 
-		flash('Password has been updated')
-		return redirect(url_for('user'))
+		flash('Password has been updated', 'success')
+		return redirect(url_for('routes.change_password'))
 
 	return render_template('change_password.html')
