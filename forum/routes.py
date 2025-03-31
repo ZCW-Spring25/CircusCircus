@@ -134,6 +134,8 @@ def message():
    db.session.commit()
    render_template("message.html", message=message)
 
+#need and action for message
+
 
 @login_required
 @rt.route('/action_reply/comment/<int:comment_id>', methods=['POST']) #attempt to mimic comment as a reply
