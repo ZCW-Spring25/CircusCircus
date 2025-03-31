@@ -33,8 +33,6 @@
 		<input class="inputbox" style="margin-bottom: 1%;" type="submit" value="Comment">
 	</form>
 </div>
-<div style="text-align: center;">
-
 
 
 	{% if current_user.is_authenticated %}
@@ -44,6 +42,11 @@
 	<a href="/loginform">Login or register to make a comment</a>
 	{% endif %}
 </div>
+
+
+
+
+
 
 
 
@@ -72,6 +75,9 @@
 
 
 {% endif %}
+
+
+
 <script type="text/javascript">
 function toggle(){
 	var div = document.getElementById("addcomment");
@@ -86,6 +92,12 @@ function toggle(){
 
 }
 </script>
+
+
+
+
+
+
 
 
 {% endblock %}
