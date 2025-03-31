@@ -1,10 +1,11 @@
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, redirect, url_for, flash
 from flask_login import current_user, login_user, logout_user
 from flask_login.utils import login_required
 import datetime
 from flask import Blueprint, render_template, request, redirect, url_for
-from forum.models import User, Post, Comment, Subforum, valid_content, valid_title, db, generateLinkPath, error
+from forum.models import User, Post, Comment, Subforum, valid_content, valid_title, db, generateLinkPath, error, Reply
 from forum.user import username_taken, email_taken, valid_username
+from werkzeug.security import generate_password_hash, check_password_hash
 
 ##
 # This file needs to be broken up into several, to make the project easier to work on.
@@ -118,6 +119,17 @@ def comment():
 	return redirect("/viewpost?post=" + str(post_id))
 
 @login_required
+@rt.route('/action_reply/comment/<int:comment_id>', methods=['POST']) #attempt to mimic comment as a reply
+def action_reply(comment_id):
+	comment = Comment.query.get_or_404(comment_id)
+	content = request.form['content']
+	postdate = datetime.datetime.now()
+	reply = Reply(content=content, postdate=postdate, user_id=current_user.id, comment_id=comment_id)
+	db.session.add(reply)
+	db.session.commit()
+	return redirect(url_for('routes.viewpost', post=comment.post_id))
+
+@login_required
 @rt.route('/action_post', methods=['POST'])
 def action_post():
 	subforum_id = int(request.args.get("sub"))
@@ -145,3 +157,42 @@ def action_post():
 	db.session.commit()
 	return redirect("/viewpost?post=" + str(post.id))
 
+@login_required
+@rt.route('/user')
+def user():
+	user_id = request.args.get('user_id')
+
+	if user_id:
+		user = User.query.get_or_404(user_id)
+		posts = Post.query.filter(Post.user_id == user.id).all()
+		comments = Comment.query.filter(Comment.user_id == user.id).all()
+		replies = Reply.query.filter(Reply.user_id == user.id).all()
+		return render_template('user.html', user=user, posts=posts, comments= comments, replies= replies)
+	elif current_user.is_authenticated:
+		return redirect(url_for('routes.user', user_id=current_user.id))
+	else:
+		return redirect ('/loginform')
+
+@login_required
+@rt.route('/change_password', methods=['POST', 'GET'])
+def change_password():
+	if request.method == 'POST':
+		old_password = request.form['old_password']
+		new_password = request.form['new_password']
+		confirm_password = request.form['confirm_password']
+
+		if not check_password_hash(current_user.password_hash, old_password):
+			flash('Old password does not match records.', 'danger')
+			return redirect(url_for('routes.change_password'))
+
+		if new_password != confirm_password:
+			flash('New and confirm do not match.', 'warning')
+			return redirect(url_for('routes.change_password'))
+
+		current_user.password_hash = generate_password_hash(new_password)
+		db.session.commit()
+
+		flash('Password has been updated', 'success')
+		return redirect(url_for('routes.change_password'))
+
+	return render_template('change_password.html')
