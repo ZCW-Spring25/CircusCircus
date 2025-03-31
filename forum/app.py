@@ -8,8 +8,8 @@ from . import create_app
 app = create_app()
 socketio = SocketIO(app)
 
-app.config['SITE_NAME'] = 'Schooner'
-app.config['SITE_DESCRIPTION'] = 'a schooner forum'
+app.config['SITE_NAME'] = 'Something, Anything, that is not that'
+app.config['SITE_DESCRIPTION'] = 'a forum for Data to learn from'
 app.config['FLASK_DEBUG'] = 1
 
 if __name__ == '__main__':
