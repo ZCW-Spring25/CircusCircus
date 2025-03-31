@@ -29,7 +29,7 @@ def action_login():
     return redirect("/")
 
 
-@login_required
+# @login_required
 @rt.route('/action_logout')
 def action_logout():
     #todo
