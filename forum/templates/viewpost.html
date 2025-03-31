@@ -20,8 +20,8 @@
 </div>
 <div class="addcomment" id="addcomment">
 	<form action="/action_comment?post={{ post.id }}" method="POST">
-		<textarea class="inputbox varwidth" rows="6" name="content"></textarea><br>
-		<input class="inputbox" style="margin-bottom: 1%;" type="submit" value="Comment">
+		<textarea class="form-control" placeholder="enter comment..." rows="6" name="content"></textarea><br>
+		<input class="btn btn-outline-primary" style="margin-bottom: 1%;" type="submit" value="Comment">
 	</form>
 </div>
 <div style="text-align: center;">
@@ -29,7 +29,7 @@
 	
 
 	{% if current_user.is_authenticated %}
-	<input type="button" id="displayaddcomment" onclick="toggle()" value="Add a comment">
+	<input type="button" class = "btn btn-outline-primary" id="displayaddcomment" onclick="toggle()" value="Add a comment">
 
 	{% else %}
 	<a href="/loginform">Login or register to make a comment</a>
