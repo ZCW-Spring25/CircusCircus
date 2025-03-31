@@ -17,11 +17,17 @@
 	{% else %}
 	<a href="/loginform">Click here to login or register!</a>
 	{% endif %}
+
+<div class="message">
+	<a href="/message"> Send a message!</a>
 </div>
+#</div>
+
+#</div>
 
 {% if current_user.is_authenticated %}
     <div class="actualuser">
         <a href="{{ url_for('routes.user', user_id=current_user.id) }}">Profile</a>
-		<a href="{{ url_for('routes.change_password') }}">Change Password</a>
+		    <a href="{{ url_for('routes.change_password') }}">Change Password</a>
     </div>
 {% endif %}

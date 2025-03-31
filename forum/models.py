@@ -17,6 +17,10 @@ class User(UserMixin, db.Model):
     admin = db.Column(db.Boolean, default=False)
     posts = db.relationship("Post", backref="user")
     comments = db.relationship("Comment", backref="user")
+    messages = db.relationship("Message", backref="user")
+    #sender_id =  db.relationship("Message", backref="user" )
+    #messages_sent: db.WriteOnlyMapped['Message'] = db.relationship(foreign_keys="Message.sender_id", backref='author')
+    #messages_received: db.WriteOnlyMapped['Message'] = db.relationship(foreign_keys="Message.recipient_id", backref='recipient')
 
     def __init__(self, email, username, password):
         self.email = email
@@ -33,6 +37,8 @@ class Post(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     subforum_id = db.Column(db.Integer, db.ForeignKey('subforum.id'))
     postdate = db.Column(db.DateTime)
+
+
 
     #cache stuff
     lastcheck = None
@@ -80,6 +86,7 @@ class Subforum(db.Model):
         self.title = title
         self.description = description
 
+
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text)
@@ -117,6 +124,47 @@ class Comment(db.Model):
             self.savedresponce =  "Just a moment ago!"
         return self.savedresponce
 
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.Text)
+    content = db.Column(db.Text)
+    postdate = db.Column(db.DateTime)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    #sender_id = db.Column(db.Integer, db.ForeignKey('user_id'))
+    #recipient_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    #post_id = db.Column(db.Integer, db.ForeignKey("post.id"))
+    #author: db.Mapped[User] = db.relationship(foreign_keys='Message.sender_id', backref='messages_sent')
+    #recipient: db.Mapped[User] = db.relationship(foreign_keys='recipient_id', backref='messages_received')
+
+    lastcheck = None
+    savedresponce = None
+
+    def __init__(self, title, content, postdate):
+        self.title = title
+        self.content = content
+        self.postdate = postdate
+
+    def get_time_string(self):
+        # this only needs to be calculated every so often, not for every request
+        # this can be a rudamentary chache
+        now = datetime.datetime.now()
+        if self.lastcheck is None or (now - self.lastcheck).total_seconds() > 30:
+            self.lastcheck = now
+        else:
+            return self.savedresponce
+
+        diff = now - self.postdate
+        seconds = diff.total_seconds()
+        print(seconds)
+        if seconds / (60 * 60 * 24 * 30) > 1:
+            self.savedresponce = " " + str(int(seconds / (60 * 60 * 24 * 30))) + " months ago"
+        elif seconds / (60 * 60 * 24) > 1:
+            self.savedresponce = " " + str(int(seconds / (60 * 60 * 24))) + " days ago"
+        else:    
+            self.savedresponce = "Just a moment ago!"
+
+        return self.savedresponce
+
 class Reply(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text)
@@ -137,13 +185,6 @@ class Reply(db.Model):
     def get_time_string(self):
         #this only needs to be calculated every so often, not for every request
         #this can be a rudamentary chache
-        now = datetime.datetime.now()
-        if self.lastcheck is None or (now - self.lastcheck).total_seconds() > 30:
-            self.lastcheck = now
-        else:
-            return self.savedresponce
-
-        diff = now - self.postdate
         seconds = diff.total_seconds()
         if seconds / (60 * 60 * 24 * 30) > 1:
             self.savedresponce =  " " + str(int(seconds / (60 * 60 * 24 * 30))) + " months ago"
