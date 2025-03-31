@@ -185,6 +185,13 @@ class Reply(db.Model):
     def get_time_string(self):
         #this only needs to be calculated every so often, not for every request
         #this can be a rudamentary chache
+        now = datetime.datetime.now()
+        if self.lastcheck is None or (now - self.lastcheck).total_seconds() > 30:
+            self.lastcheck = now
+        else:
+            return self.savedresponce
+
+        diff = now - self.postdate
         seconds = diff.total_seconds()
         if seconds / (60 * 60 * 24 * 30) > 1:
             self.savedresponce =  " " + str(int(seconds / (60 * 60 * 24 * 30))) + " months ago"
