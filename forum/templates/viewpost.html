@@ -15,7 +15,7 @@
 		</div>
 	</div>
 	<div class="postcontent">
-		{{post.content}}
+		{{post.content | safe }}
 	</div>
 
 	{% else %}
@@ -25,24 +25,22 @@
 </div>
 
 
+{% if current_user.is_authenticated %}
+	<div class="addcomment" id="addcomment" style="display: none;">
+		<form action="/action_comment?post={{ post.id }}" method="POST">
+			<textarea class="form-control" placeholder="enter comment..." rows="6" name="content"></textarea><br>
+			<input class="btn btn-outline-primary" style="margin-bottom: 1%;" type="submit" value="Comment">
+		</form>
+	</div>
 
-<div class="addcomment" id="addcomment">
-	<form action="/action_comment?post={{ post.id }}" method="POST">
-		<textarea class="form-control" placeholder="enter comment..." rows="6" name="content"></textarea><br>
-		<input class="btn btn-outline-primary" style="margin-bottom: 1%;" type="submit" value="Comment">
-	</form>
-</div>
-
-<div style="text-align: center;">
-
-	{% if current_user.is_authenticated %}
-	<input type="button" id="displayaddcomment" onclick="toggle('addcomment', 'displayaddcomment')" value="Add a comment">
-
-	{% else %}
-	<a href="/loginform">Login or register to make a comment</a>
-	{% endif %}
-</div>
-
+	<div style="text-align: center;">
+		<input type="button" id="displayaddcomment" onclick="toggleAddComment()" value="Add a comment">
+	</div>
+{% else %}
+	<div style="text-align: center;">
+		<a href="/loginform">Login or register to make a comment</a>
+	</div>
+{% endif %}
 
 
 
@@ -68,7 +66,7 @@
 
 		{% if current_user.is_authenticated %}
         <div style="margin-left: 20px;">
-            <input type="button" id="displayreplyform-{{ comment.id }}" onclick="toggle('replyform-{{ comment.id }}', 'displayreplyform-{{ comment.id }}')" value="Reply">
+            <input type="button" id="displayreplyform-{{ comment.id }}" onclick="toggleReply('replyform-{{ comment.id }}', 'displayreplyform-{{ comment.id }}')" value="Reply">
             <div id="replyform-{{ comment.id }}" style="display: none;">
                 <form method="POST" action="{{ url_for('routes.action_reply', comment_id=comment.id) }}">
                     <textarea name="content" placeholder="Write a reply..." required></textarea><br>
@@ -108,7 +106,20 @@
 {% endif %}
 
 <script type="text/javascript">
-function toggle(elementIdToShowHide, buttonId){
+function toggleAddComment(){
+    var div = document.getElementById('addcomment');
+    var button = document.getElementById('displayaddcomment');
+
+    if (div.style.display === "none" || div.style.display.trim() === "") {
+        div.style.display = "block";
+        button.value = "Hide Comment";
+    } else {
+        div.style.display = "none";
+        button.value = "Add a comment";
+    }
+}
+
+function toggleReply(elementIdToShowHide, buttonId){
     var div = document.getElementById(elementIdToShowHide);
     var button = document.getElementById(buttonId);
 
